@@ -45,6 +45,7 @@ import { Upgrade } from "./commands/upgrade";
 import { SourceControlManager } from "./source_control_manager";
 import { SearchLogByRevision } from "./commands/search_log_by_revision";
 import { SearchLogByText } from "./commands/search_log_by_text";
+import { DiffWithRevision } from "./commands/diffWithRevision";
 
 export function registerCommands(
   sourceControlManager: SourceControlManager,
@@ -62,6 +63,7 @@ export function registerCommands(
   disposables.push(new OpenResourceBase());
   disposables.push(new OpenResourceHead());
   disposables.push(new OpenChangeBase());
+  disposables.push(new DiffWithRevision());
   disposables.push(new SwitchBranch());
   disposables.push(new Revert());
   disposables.push(new Update());

@@ -452,6 +452,11 @@
                 "category": "SVN"
             },
             {
+                "command": "svn.diffWithRevision",
+                "title": "Diff current file another revision",
+                "category": "SVN"
+            },
+            {
                 "command": "svn.switchBranch",
                 "title": "Switch Branch",
                 "category": "SVN"
@@ -683,6 +688,10 @@
                     "when": "config.svn.enabled && svnOpenRepositoryCount != 0 && isSvn18orGreater"
                 },
                 {
+                    "command": "svn.diffWithRevision",
+                    "when": "config.svn.enabled && svnOpenRepositoryCount != 0"
+                },
+                {
                     "command": "svn.switchBranch",
                     "when": "config.svn.enabled && svnOpenRepositoryCount != 0"
                 },
@@ -808,6 +817,10 @@
                 {
                     "command": "svn.pickCommitMessage",
                     "group": "navigation",
+                    "when": "config.svn.enabled && scmProvider == svn"
+                },
+                {
+                    "command": "svn.diffWithRevision",
                     "when": "config.svn.enabled && scmProvider == svn"
                 },
                 {
