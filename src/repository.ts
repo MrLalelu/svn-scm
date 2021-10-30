@@ -951,6 +951,13 @@ export class Repository implements IRemoteRepository {
     );
   }
 
+  public async getAllRevisions(file: string): Promise<string[]> {
+    return this.run(
+      Operation.AllRevisions,
+      async () => await this.repository.getAllRevisions(file)
+    );
+  }
+
   public async finishCheckout() {
     return this.run(Operation.SwitchBranch, () =>
       this.repository.finishCheckout()

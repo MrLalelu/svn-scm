@@ -108,6 +108,7 @@ export enum Operation {
   Commit = "Commit",
   CurrentBranch = "CurrentBranch",
   CurrentRevision = "CurrentRevision",
+  AllRevisions = "AllRevisions",
   Info = "Info",
   Ignore = "Ignore",
   Log = "Log",

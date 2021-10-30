@@ -1,5 +1,5 @@
 import { window } from "vscode";
-import { getLimit, openDiff } from "../historyView/common";
+import { openDiff } from "../historyView/common";
 import { ResourceKind } from "../pathNormalizer";
 import { Repository } from "../repository";
 import SvnError from "../svnError";
@@ -11,7 +11,6 @@ export class DiffWithRevision extends Command {
   }
 
   public async execute(repository: Repository) {
-    const log_limit = getLimit();
     const current_text_edit = window.activeTextEditor;
     if (current_text_edit === undefined) {
       window.showErrorMessage("Cannot show diff if no file is selected!");
@@ -33,8 +32,10 @@ export class DiffWithRevision extends Command {
       .substring(1);
 
     let current_revision: string;
+    let all_revisions: string[];
     try {
       current_revision = await repository.getCurrentRevision(file_uri_relative);
+      all_revisions = await repository.getAllRevisions(file_uri_relative);
     } catch (error) {
       // handle error here, to make sure we can talk to svn regaring the
       // selected file and that it is actually versioned.
@@ -57,28 +58,14 @@ export class DiffWithRevision extends Command {
       return;
     }
 
-    const path_normalizer = repository.getPathNormalizer();
-    const selected_file_svnir = path_normalizer.parse(
-      current_text_edit.document.uri.fsPath,
-      ResourceKind.LocalFull,
-      current_revision
-    );
-
-    const log = await repository.log(
-      "1",
-      "HEAD",
-      log_limit,
-      selected_file_svnir.remoteFullPath
-    );
-
     // map from revision text to revision number (as string)
     const revisions: Map<string, string> = new Map();
-    log.reverse().forEach(element => {
-      let tmp_revision = "r" + element.revision;
-      if (element.revision == current_revision) {
+    all_revisions.reverse().forEach(element => {
+      let tmp_revision = "r" + element;
+      if (element == current_revision) {
         tmp_revision += " (current)";
       }
-      revisions.set(tmp_revision, element.revision);
+      revisions.set(tmp_revision, element);
     });
 
     const selected_revision = await window.showQuickPick(
@@ -101,6 +88,12 @@ export class DiffWithRevision extends Command {
       return;
     }
 
+    const path_normalizer = repository.getPathNormalizer();
+    const selected_file_svnir = path_normalizer.parse(
+      current_text_edit.document.uri.fsPath,
+      ResourceKind.LocalFull,
+      current_revision
+    );
     await openDiff(
       repository,
       selected_file_svnir.remoteFullPath,

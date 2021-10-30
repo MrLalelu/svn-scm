@@ -33,6 +33,7 @@ import {
 } from "./util";
 import { matchAll } from "./util/globMatch";
 import { parseDiffXml } from "./parser/diffParser";
+import { getLimit } from "./historyView/common";
 
 export class Repository {
   private _infoCache: {
@@ -287,6 +288,14 @@ export class Repository {
     );
 
     return result.stdout.replace(/\n/g, "").replace(/\r/g, "");
+  }
+
+  public async getAllRevisions(file: string): Promise<string[]> {
+    const log_limit = getLimit();
+    const log = await this.log("1", "HEAD", log_limit, file);
+    const revisions: string[] = [];
+    log.forEach(element => revisions.push(element.revision));
+    return revisions;
   }
 
   public async show(file: string | Uri, revision?: string): Promise<string> {
