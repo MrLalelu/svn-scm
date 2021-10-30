@@ -827,6 +827,13 @@ export class Repository implements IRemoteRepository {
     });
   }
 
+  public async getCurrentRevision(file?: string): Promise<string> {
+    return this.run(
+      Operation.CurrentRevision,
+      async () => await this.repository.getCurrentRevision(file)
+    );
+  }
+
   public async pullIncomingChange(path: string) {
     return this.run<string>(Operation.Update, async () => {
       const response = await this.repository.pullIncomingChange(path);

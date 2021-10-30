@@ -662,6 +662,16 @@ export class Repository {
     return true;
   }
 
+  public async getCurrentRevision(file?: string): Promise<string> {
+    const result = await this.exec(
+      ["info", "--show-item", "last-changed-revision"].concat(
+        file ? [file] : []
+      )
+    );
+
+    return result.stdout.replace(/\n/g, "").replace(/\r/g, "");
+  }
+
   public async revert(files: string[], depth: keyof typeof SvnDepth) {
     files = files.map(file => this.removeAbsolutePath(file));
     const result = await this.exec(["revert", "--depth", depth, ...files]);

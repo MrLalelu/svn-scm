@@ -1,5 +1,4 @@
 import { window } from "vscode";
-import { ISvnInfo } from "../common/types";
 import { getLimit, openDiff } from "../historyView/common";
 import { ResourceKind } from "../pathNormalizer";
 import { Repository } from "../repository";
@@ -27,14 +26,15 @@ export class DiffWithRevision extends Command {
       );
       return;
     }
+    // make path relative - use substring instead of + "/" to handle windows and linux
+    // delimiter.
+    const file_uri_relative = file_uri
+      .replace(repository.workspaceRoot, "")
+      .substring(1);
 
-    const path_normalizer = repository.getPathNormalizer();
-    let info: ISvnInfo;
+    let current_revision: string;
     try {
-      // for some reason this command crashes the entire svn plugin if
-      // called with a file not from the svn folder. Therefore
-      // it is checked above, that the command is called with an svn file
-      info = await repository.info(current_text_edit.document.uri.fsPath);
+      current_revision = await repository.getCurrentRevision(file_uri_relative);
     } catch (error) {
       // handle error here, to make sure we can talk to svn regaring the
       // selected file and that it is actually versioned.
@@ -57,10 +57,11 @@ export class DiffWithRevision extends Command {
       return;
     }
 
+    const path_normalizer = repository.getPathNormalizer();
     const selected_file_svnir = path_normalizer.parse(
       current_text_edit.document.uri.fsPath,
       ResourceKind.LocalFull,
-      info.revision
+      current_revision
     );
 
     const log = await repository.log(
@@ -72,20 +73,20 @@ export class DiffWithRevision extends Command {
 
     // map from revision text to revision number (as string)
     const revisions: Map<string, string> = new Map();
-    log.forEach(element => {
+    log.reverse().forEach(element => {
       let tmp_revision = "r" + element.revision;
-      if (element.revision == info.revision) {
+      if (element.revision == current_revision) {
         tmp_revision += " (current)";
       }
       revisions.set(tmp_revision, element.revision);
     });
 
     const selected_revision = await window.showQuickPick(
-      Array.from(revisions.keys()).reverse(),
+      Array.from(revisions.keys()),
       {
         placeHolder:
           "select revision to diff current file with (current: " +
-          info.revision +
+          current_revision +
           ")"
       }
     );
@@ -104,7 +105,7 @@ export class DiffWithRevision extends Command {
       repository,
       selected_file_svnir.remoteFullPath,
       selected_revision_number,
-      info.revision
+      current_revision
     );
   }
 }
