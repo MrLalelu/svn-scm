@@ -279,6 +279,16 @@ export class Repository {
     return changes;
   }
 
+  public async getCurrentRevision(file?: string): Promise<string> {
+    const result = await this.exec(
+      ["info", "--show-item", "last-changed-revision"].concat(
+        file ? [file] : []
+      )
+    );
+
+    return result.stdout.replace(/\n/g, "").replace(/\r/g, "");
+  }
+
   public async show(file: string | Uri, revision?: string): Promise<string> {
     const args = ["cat"];
 
@@ -660,16 +670,6 @@ export class Repository {
 
     this.resetInfoCache();
     return true;
-  }
-
-  public async getCurrentRevision(file?: string): Promise<string> {
-    const result = await this.exec(
-      ["info", "--show-item", "last-changed-revision"].concat(
-        file ? [file] : []
-      )
-    );
-
-    return result.stdout.replace(/\n/g, "").replace(/\r/g, "");
   }
 
   public async revert(files: string[], depth: keyof typeof SvnDepth) {
