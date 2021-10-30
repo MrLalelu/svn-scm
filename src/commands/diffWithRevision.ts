@@ -70,27 +70,40 @@ export class DiffWithRevision extends Command {
       selected_file_svnir.remoteFullPath
     );
 
-    const revisions: string[] = [];
+    // map from revision text to revision number (as string)
+    const revisions: Map<string, string> = new Map();
     log.forEach(element => {
       let tmp_revision = "r" + element.revision;
       if (element.revision == info.revision) {
         tmp_revision += " (current)";
       }
-      revisions.push(tmp_revision);
+      revisions.set(tmp_revision, element.revision);
     });
 
-    const selected_revision = await window.showQuickPick(revisions.reverse(), {
-      placeHolder: "select revision to diff current file with"
-    });
+    const selected_revision = await window.showQuickPick(
+      Array.from(revisions.keys()).reverse(),
+      {
+        placeHolder:
+          "select revision to diff current file with (current: " +
+          info.revision +
+          ")"
+      }
+    );
 
     if (selected_revision === undefined) {
+      return;
+    }
+    const selected_revision_number = revisions.get(selected_revision);
+    if (selected_revision_number === undefined) {
+      // This should never happen!
+      await window.showErrorMessage("Unexpected error");
       return;
     }
 
     await openDiff(
       repository,
       selected_file_svnir.remoteFullPath,
-      selected_revision,
+      selected_revision_number,
       info.revision
     );
   }
